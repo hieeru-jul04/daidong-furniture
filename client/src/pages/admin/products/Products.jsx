@@ -3,7 +3,7 @@ import { FaPlus, FaSearch, FaEdit, FaTrash, FaFilter, FaImage, FaTags, FaUpload,
 import { productApi } from '../../../services/product.api';
 import { categoryApi } from '../../../services/category.api';
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const emptyForm = {
   _id: null, name: '', sku: '', category: '', price: '', originalPrice: '',

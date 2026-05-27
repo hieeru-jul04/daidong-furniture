@@ -21,7 +21,7 @@ const AdminLayout = ({ children }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetch("http://localhost:8080/api/auth/admin", {
+        fetch((import.meta.env.VITE_API_URL || "http://localhost:8080") + "/api/auth/admin", {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`
             }

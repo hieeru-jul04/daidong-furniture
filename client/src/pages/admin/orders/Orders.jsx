@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { FaSearch, FaEye, FaSpinner, FaTimes, FaCheck, FaTruck, FaBox, FaUndo, FaTrash } from 'react-icons/fa';
 import { orderApi } from '../../../services/order.api';
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);

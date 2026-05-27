@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { productApi } from '../services/product.api';
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export const getImageSrc = (img) => {
   if (!img) return 'https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?auto=format&fit=crop&w=500&q=80';

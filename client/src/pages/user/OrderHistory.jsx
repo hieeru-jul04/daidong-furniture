@@ -74,7 +74,7 @@ const OrderHistory = () => {
     return new Date(dateString).toLocaleDateString('vi-VN', options);
   };
 
-  const BASE_URL = 'http://localhost:8080';
+  const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
   const getImageSrc = (img) => img?.startsWith('http') ? img : `${BASE_URL}${img}`;
 
   const displayName = userProfile?.name || userProfile?.username || 'Người dùng';

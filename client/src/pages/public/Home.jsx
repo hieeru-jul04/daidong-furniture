@@ -16,7 +16,7 @@ const FALLBACK_IMAGES = [
   'https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=500&q=80',
 ];
 
-const BASE_URL = 'http://localhost:8080';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const Home = () => {
   const [activeCategory, setActiveCategory] = useState('All');
