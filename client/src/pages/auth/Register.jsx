@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/auth.api';
 import Logo from '../../components/shared/Logo';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -30,6 +31,7 @@ const Register = () => {
       return;
     }
     
+    setIsLoading(true);
     try {
       const { confirmPassword, ...registerData } = formData;
       await authApi.register(registerData);
@@ -39,6 +41,7 @@ const Register = () => {
     } catch (err) {
       setError(err.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.');
       console.error(err);
+      setIsLoading(false);
     }
   };
 
@@ -181,9 +184,16 @@ const Register = () => {
 
             <button
               type="submit"
-              className="w-full cursor-pointer py-3.5 px-4 mt-2 rounded-lg text-white bg-daidong-black hover:bg-daidong-red font-bold uppercase tracking-wider transition-colors duration-300 shadow-md"
+              disabled={isLoading}
+              className="w-full cursor-pointer py-3.5 px-4 mt-2 rounded-lg text-white bg-daidong-black hover:bg-daidong-red font-bold uppercase tracking-wider transition-colors duration-300 shadow-md disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
             >
-              Đăng ký
+              {isLoading ? (
+                <>
+                  <FaSpinner className="animate-spin" /> Đang đăng ký...
+                </>
+              ) : (
+                'Đăng ký'
+              )}
             </button>
           </form>
 

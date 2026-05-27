@@ -2,15 +2,17 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { authApi } from '../../services/auth.api';
 import Logo from '../../components/shared/Logo';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async ({ username, password }) => {
+    setIsLoading(true);
     try {
       const response = await authApi.login({ username, password });
       localStorage.setItem("token", response.data.token);
@@ -22,6 +24,7 @@ const Login = () => {
     } catch (err) {
       setError('Tên đăng nhập hoặc mật khẩu không chính xác.');
       console.error(err);
+      setIsLoading(false);
     }
   };
 
@@ -121,9 +124,16 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full cursor-pointer py-3.5 px-4 rounded-lg text-white bg-daidong-black hover:bg-daidong-red font-bold uppercase tracking-wider transition-colors duration-300 shadow-md"
+              disabled={isLoading}
+              className="w-full cursor-pointer py-3.5 px-4 rounded-lg text-white bg-daidong-black hover:bg-daidong-red font-bold uppercase tracking-wider transition-colors duration-300 shadow-md disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
             >
-              Đăng nhập
+              {isLoading ? (
+                <>
+                  <FaSpinner className="animate-spin" /> Đang đăng nhập...
+                </>
+              ) : (
+                'Đăng nhập'
+              )}
             </button>
           </form>
 
