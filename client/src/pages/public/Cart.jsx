@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaTrash, FaMinus, FaPlus, FaShoppingBag, FaChevronRight, FaArrowLeft } from 'react-icons/fa';
 import { useShop } from '../../contexts/ShopContext';
+import ConfirmModal from '../../components/shared/ConfirmModal';
 
 const Cart = () => {
   const { cart, removeFromCart, updateQuantity, getCartTotal } = useShop();
@@ -9,6 +10,11 @@ const Cart = () => {
   const [checkedItems, setCheckedItems] = useState(() =>
     Object.fromEntries(cart.map(item => [item.cartKey, true]))
   );
+
+  // Confirm Modal states
+  const [isDeleteSelectedModalOpen, setIsDeleteSelectedModalOpen] = useState(false);
+  const [isDeleteItemModalOpen, setIsDeleteItemModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const toggleCheck = (cartKey) => {
     setCheckedItems(prev => ({ ...prev, [cartKey]: !prev[cartKey] }));
@@ -23,9 +29,27 @@ const Cart = () => {
   const selectedTotal = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const allChecked = cart.length > 0 && cart.every(item => checkedItems[item.cartKey]);
 
-  const handleDeleteSelected = () => {
+  const handleDeleteSelectedClick = () => {
+    setIsDeleteSelectedModalOpen(true);
+  };
+
+  const handleDeleteSelectedConfirm = () => {
     selectedItems.forEach(item => removeFromCart(item.cartKey));
     setCheckedItems({});
+    setIsDeleteSelectedModalOpen(false);
+  };
+
+  const handleDeleteItemClick = (cartKey) => {
+    setItemToDelete(cartKey);
+    setIsDeleteItemModalOpen(true);
+  };
+
+  const handleDeleteItemConfirm = () => {
+    if (itemToDelete) {
+      removeFromCart(itemToDelete);
+      setIsDeleteItemModalOpen(false);
+      setItemToDelete(null);
+    }
   };
 
   const handleCheckout = () => {
@@ -82,7 +106,7 @@ const Cart = () => {
                 </label>
                 {selectedItems.length > 0 && (
                   <button
-                    onClick={handleDeleteSelected}
+                    onClick={handleDeleteSelectedClick}
                     className="flex items-center gap-2 text-red-500 hover:text-red-700 font-bold text-sm transition-colors"
                   >
                     <FaTrash size={12} /> Xóa đã chọn ({selectedItems.length})
@@ -153,7 +177,7 @@ const Cart = () => {
 
                     {/* Delete */}
                     <button
-                      onClick={() => removeFromCart(item.cartKey)}
+                      onClick={() => handleDeleteItemClick(item.cartKey)}
                       className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all"
                     >
                       <FaTrash size={14} />
@@ -218,6 +242,27 @@ const Cart = () => {
           </div>
         )}
       </div>
+
+      {/* Confirm Modals */}
+      <ConfirmModal 
+        isOpen={isDeleteSelectedModalOpen}
+        onClose={() => setIsDeleteSelectedModalOpen(false)}
+        onConfirm={handleDeleteSelectedConfirm}
+        title="Xóa mục đã chọn"
+        message={`Bạn có chắc chắn muốn xóa ${selectedItems.length} sản phẩm đã chọn khỏi giỏ hàng?`}
+        confirmText="Xóa"
+        type="danger"
+      />
+
+      <ConfirmModal 
+        isOpen={isDeleteItemModalOpen}
+        onClose={() => setIsDeleteItemModalOpen(false)}
+        onConfirm={handleDeleteItemConfirm}
+        title="Xóa sản phẩm"
+        message="Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?"
+        confirmText="Xóa"
+        type="danger"
+      />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaSearch, FaTrash, FaSpinner, FaUserCircle, FaEye, FaTimes, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 import { userApi } from '../../../services/user.api';
+import ConfirmModal from '../../../components/shared/ConfirmModal';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -8,6 +9,10 @@ const Users = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 1 });
   const [selectedUser, setSelectedUser] = useState(null);
+  
+  // Confirm Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -29,11 +34,18 @@ const Users = () => {
     fetchUsers();
   }, [fetchUsers]);
 
-  const handleDeleteUser = async (id, name) => {
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa tài khoản của khách hàng "${name}"? Hành động này không thể hoàn tác.`)) return;
+  const handleDeleteUserClick = (id, name) => {
+    setUserToDelete({ id, name });
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteUserConfirm = async () => {
+    if (!userToDelete) return;
     try {
-      await userApi.delete(id);
+      await userApi.delete(userToDelete.id);
       fetchUsers();
+      setIsDeleteModalOpen(false);
+      setUserToDelete(null);
     } catch (err) {
       alert(err.response?.data?.message || 'Xóa người dùng thất bại');
     }
@@ -116,7 +128,7 @@ const Users = () => {
                           <FaEye size={14} /> Xem
                         </button>
                         <button 
-                          onClick={() => handleDeleteUser(user._id, user.name || user.username)} 
+                          onClick={() => handleDeleteUserClick(user._id, user.name || user.username)} 
                           className="text-red-400 cursor-pointer hover:text-daidong-red transition-colors p-2 hover:bg-red-50 rounded-lg inline-flex items-center gap-1 font-medium text-xs"
                           title="Xóa tài khoản"
                         >
@@ -218,6 +230,17 @@ const Users = () => {
           </div>
         </div>
       )}
+
+      {/* Confirm Modals */}
+      <ConfirmModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteUserConfirm}
+        title="Xóa khách hàng"
+        message={`Bạn có chắc chắn muốn xóa tài khoản của khách hàng "${userToDelete?.name}"? Hành động này không thể hoàn tác.`}
+        confirmText="Xóa tài khoản"
+        type="danger"
+      />
     </div>
   );
 };

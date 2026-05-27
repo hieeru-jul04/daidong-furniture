@@ -6,6 +6,7 @@ import useToggle from '../../hooks/useToggle';
 import { authApi } from '../../services/auth.api';
 import Logo from '../shared/Logo';
 import { useShop } from '../../contexts/ShopContext';
+import ConfirmModal from '../shared/ConfirmModal';
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -13,6 +14,7 @@ const Header = () => {
   const { value: isMenuOpen, toggle: toggleMenu } = useToggle();
   const { t, i18n } = useTranslation();
   const { cart, wishlist, removeFromCart, getCartTotal } = useShop();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -168,7 +170,7 @@ const Header = () => {
                   <>
                     <Link to="/profile" className="block px-4 py-3 text-sm text-daidong-dark-gray font-semibold hover:bg-daidong-red hover:text-daidong-white transition-colors">Hồ sơ</Link>
                     <Link to="/order-history" className="block px-4 py-3 text-sm text-daidong-dark-gray font-semibold hover:bg-daidong-red hover:text-daidong-white transition-colors">Đơn hàng</Link>
-                    <button onClick={handleLogout} className="block cursor-pointer w-full text-left px-4 py-3 text-sm text-daidong-dark-gray font-semibold hover:bg-daidong-red hover:text-daidong-white transition-colors">Đăng xuất</button>
+                    <button onClick={() => setIsLogoutModalOpen(true)} className="block cursor-pointer w-full text-left px-4 py-3 text-sm text-daidong-dark-gray font-semibold hover:bg-daidong-red hover:text-daidong-white transition-colors">Đăng xuất</button>
                   </>
                 ) : (
                   <>
@@ -206,6 +208,16 @@ const Header = () => {
           </div>
         )}
       </div>
+
+      <ConfirmModal 
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleLogout}
+        title="Đăng xuất"
+        message="Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này?"
+        confirmText="Đăng xuất"
+        type="warning"
+      />
     </header>
   );
 };

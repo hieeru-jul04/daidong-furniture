@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FaUser, FaBoxOpen, FaKey, FaChevronRight, FaCheckCircle, FaTruck, FaTimesCircle, FaSpinner, FaBox } from 'react-icons/fa';
 import { orderApi } from '../../services/order.api';
 import { authApi } from '../../services/auth.api';
+import ConfirmModal from '../../components/shared/ConfirmModal';
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
@@ -10,6 +11,10 @@ const OrderHistory = () => {
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
   const [userProfile, setUserProfile] = useState(null);
+  
+  // Confirm Modal state
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState(null);
 
   useEffect(() => {
     const fetchMyOrders = async () => {
@@ -36,15 +41,21 @@ const OrderHistory = () => {
     fetchProfile();
   }, []);
 
-  const handleCancelOrder = async (orderId) => {
-    if (window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) {
-      try {
-        await orderApi.cancelOrder(orderId);
-        setOrders(orders.map(o => o._id === orderId ? { ...o, status: 'Cancelled' } : o));
-      } catch (error) {
-        console.error("Lỗi khi hủy đơn hàng:", error);
-        alert(error.response?.data?.message || "Lỗi khi hủy đơn hàng");
-      }
+  const handleCancelClick = (orderId) => {
+    setOrderToCancel(orderId);
+    setIsCancelModalOpen(true);
+  };
+
+  const handleCancelConfirm = async () => {
+    if (!orderToCancel) return;
+    try {
+      await orderApi.cancelOrder(orderToCancel);
+      setOrders(orders.map(o => o._id === orderToCancel ? { ...o, status: 'Cancelled' } : o));
+      setIsCancelModalOpen(false);
+      setOrderToCancel(null);
+    } catch (error) {
+      console.error("Lỗi khi hủy đơn hàng:", error);
+      alert(error.response?.data?.message || "Lỗi khi hủy đơn hàng");
     }
   };
 
@@ -210,7 +221,7 @@ const OrderHistory = () => {
                       <div className="p-4 bg-daidong-light-gray/50 border-t border-daidong-border flex justify-end gap-3">
                         {order.status === 'Pending' && (
                           <button 
-                            onClick={() => handleCancelOrder(order._id)}
+                            onClick={() => handleCancelClick(order._id)}
                             className="text-sm font-bold text-daidong-red hover:text-white transition-colors uppercase tracking-wider px-4 py-2 border-2 border-daidong-red hover:bg-daidong-red rounded-lg">
                             Hủy đơn hàng
                           </button>
@@ -230,6 +241,16 @@ const OrderHistory = () => {
 
         </div>
       </div>
+
+      <ConfirmModal 
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={handleCancelConfirm}
+        title="Hủy đơn hàng"
+        message="Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác."
+        confirmText="Hủy đơn hàng"
+        type="danger"
+      />
     </div>
   );
 };

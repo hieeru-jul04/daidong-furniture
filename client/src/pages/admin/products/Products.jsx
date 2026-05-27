@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { FaPlus, FaSearch, FaEdit, FaTrash, FaFilter, FaImage, FaTags, FaUpload, FaSpinner, FaTimes } from 'react-icons/fa';
 import { productApi } from '../../../services/product.api';
 import { categoryApi } from '../../../services/category.api';
+import ConfirmModal from '../../../components/shared/ConfirmModal';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -33,6 +34,13 @@ const Products = () => {
   const [catSaving, setCatSaving] = useState(false);
   const [categoryImageFile, setCategoryImageFile] = useState(null);
   const [categoryImagePreview, setCategoryImagePreview] = useState(null);
+
+  // Modal Confirm
+  const [isDeleteProductModalOpen, setIsDeleteProductModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
+
+  const [isDeleteCategoryModalOpen, setIsDeleteCategoryModalOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
 
   // --- Fetch dữ liệu ---
   const fetchProducts = useCallback(async () => {
@@ -92,11 +100,18 @@ const Products = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteClick = async (id) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')) return;
+  const handleDeleteClick = (id) => {
+    setProductToDelete(id);
+    setIsDeleteProductModalOpen(true);
+  };
+
+  const handleDeleteProductConfirm = async () => {
+    if (!productToDelete) return;
     try {
-      await productApi.delete(id);
+      await productApi.delete(productToDelete);
       fetchProducts();
+      setIsDeleteProductModalOpen(false);
+      setProductToDelete(null);
     } catch (err) {
       alert(err.response?.data?.message || 'Xóa sản phẩm thất bại');
     }
@@ -210,11 +225,18 @@ const Products = () => {
     setCategoryImagePreview(cat.image ? `${BASE_URL}${cat.image}` : null);
   };
 
-  const handleDeleteCategory = async (id) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa danh mục này?')) return;
+  const handleDeleteCategory = (id) => {
+    setCategoryToDelete(id);
+    setIsDeleteCategoryModalOpen(true);
+  };
+
+  const handleDeleteCategoryConfirm = async () => {
+    if (!categoryToDelete) return;
     try {
-      await categoryApi.delete(id);
+      await categoryApi.delete(categoryToDelete);
       fetchCategories();
+      setIsDeleteCategoryModalOpen(false);
+      setCategoryToDelete(null);
     } catch (err) {
       alert(err.response?.data?.message || 'Xóa danh mục thất bại');
     }
@@ -548,6 +570,27 @@ const Products = () => {
           </div>
         </div>
       )}
+
+      {/* Confirm Modals */}
+      <ConfirmModal 
+        isOpen={isDeleteProductModalOpen}
+        onClose={() => setIsDeleteProductModalOpen(false)}
+        onConfirm={handleDeleteProductConfirm}
+        title="Xóa sản phẩm"
+        message="Bạn có chắc chắn muốn xóa sản phẩm này không? Hành động này không thể hoàn tác."
+        confirmText="Xóa sản phẩm"
+        type="danger"
+      />
+
+      <ConfirmModal 
+        isOpen={isDeleteCategoryModalOpen}
+        onClose={() => setIsDeleteCategoryModalOpen(false)}
+        onConfirm={handleDeleteCategoryConfirm}
+        title="Xóa danh mục"
+        message="Bạn có chắc chắn muốn xóa danh mục này không? Các sản phẩm thuộc danh mục này có thể bị ảnh hưởng."
+        confirmText="Xóa danh mục"
+        type="danger"
+      />
     </div>
   );
 };

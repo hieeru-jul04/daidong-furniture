@@ -14,9 +14,11 @@ import {
 } from 'react-icons/fa';
 import { authApi } from '../services/auth.api';
 import Logo from '../components/shared/Logo';
+import ConfirmModal from '../components/shared/ConfirmModal';
 
 const AdminLayout = ({ children }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -140,7 +142,7 @@ const AdminLayout = ({ children }) => {
                                 <div className="flex-1">
                                     <div className="font-medium">Quản trị viên</div>
                                     <button
-                                        onClick={handleLogout}
+                                        onClick={() => setIsLogoutModalOpen(true)}
                                         className="flex items-center space-x-2 text-sm text-gray-400 hover:text-white transition-colors"
                                     >
                                         <FaSignOutAlt size={14} />
@@ -179,6 +181,16 @@ const AdminLayout = ({ children }) => {
                     {children}
                 </main>
             </div>
+
+            <ConfirmModal 
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                onConfirm={handleLogout}
+                title="Đăng xuất"
+                message="Bạn có chắc chắn muốn đăng xuất khỏi phiên làm việc này?"
+                confirmText="Đăng xuất"
+                type="warning"
+            />
         </div>
     );
 };

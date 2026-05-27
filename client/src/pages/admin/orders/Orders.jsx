@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaSearch, FaEye, FaSpinner, FaTimes, FaCheck, FaTruck, FaBox, FaUndo, FaTrash } from 'react-icons/fa';
 import { orderApi } from '../../../services/order.api';
+import ConfirmModal from '../../../components/shared/ConfirmModal';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -16,6 +17,11 @@ const Orders = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [editedStatus, setEditedStatus] = useState('');
+
+  // Confirm Modal States
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState(null);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -57,18 +63,25 @@ const Orders = () => {
       alert(error.response?.data?.message || 'Cập nhật trạng thái thất bại');
     } finally {
       setUpdatingStatus(false);
+      setIsUpdateModalOpen(false);
     }
   };
 
-  const handleDeleteOrder = async (orderId) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa đơn hàng này vĩnh viễn?')) {
-      try {
-        await orderApi.deleteOrder(orderId);
-        setOrders(orders.filter(o => o._id !== orderId));
-        setPagination(p => ({ ...p, total: p.total - 1 }));
-      } catch (error) {
-        alert(error.response?.data?.message || 'Lỗi khi xóa đơn hàng');
-      }
+  const handleDeleteOrderClick = (orderId) => {
+    setOrderToDelete(orderId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteOrderConfirm = async () => {
+    if (!orderToDelete) return;
+    try {
+      await orderApi.deleteOrder(orderToDelete);
+      setOrders(orders.filter(o => o._id !== orderToDelete));
+      setPagination(p => ({ ...p, total: p.total - 1 }));
+      setIsDeleteModalOpen(false);
+      setOrderToDelete(null);
+    } catch (error) {
+      alert(error.response?.data?.message || 'Lỗi khi xóa đơn hàng');
     }
   };
 
@@ -171,7 +184,7 @@ const Orders = () => {
                         <FaEye size={14} /> Chi tiết
                       </button>
                       <button 
-                        onClick={() => handleDeleteOrder(order._id)} 
+                        onClick={() => handleDeleteOrderClick(order._id)} 
                         className="text-red-500 hover:text-red-700 transition-colors p-2 hover:bg-red-50 rounded-lg inline-flex items-center gap-1 font-medium text-xs ml-2"
                       >
                         <FaTrash size={14} /> Xóa
@@ -287,7 +300,7 @@ const Orders = () => {
                         <option value="Cancelled">Đã hủy</option>
                      </select>
                      <button 
-                        onClick={() => handleUpdateStatus(selectedOrder._id, editedStatus)}
+                        onClick={() => setIsUpdateModalOpen(true)}
                         disabled={updatingStatus || editedStatus === selectedOrder.status}
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition-colors flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer"
                      >
@@ -311,6 +324,29 @@ const Orders = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Confirm Modals */}
+      <ConfirmModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteOrderConfirm}
+        title="Xóa đơn hàng"
+        message="Bạn có chắc chắn muốn xóa đơn hàng này vĩnh viễn? Hành động này không thể hoàn tác."
+        confirmText="Xóa vĩnh viễn"
+        type="danger"
+      />
+
+      {selectedOrder && (
+        <ConfirmModal 
+          isOpen={isUpdateModalOpen}
+          onClose={() => setIsUpdateModalOpen(false)}
+          onConfirm={() => handleUpdateStatus(selectedOrder._id, editedStatus)}
+          title="Cập nhật trạng thái"
+          message={`Bạn có chắc chắn muốn đổi trạng thái đơn hàng thành "${statusConfig[editedStatus]?.label}"? Khách hàng sẽ thấy thay đổi này.`}
+          confirmText="Lưu thay đổi"
+          type="info"
+        />
       )}
 
     </div>
